@@ -10,7 +10,7 @@
   0},
  {<<"lager">>,
   {git,"https://github.com/erlang-lager/lager.git",
-       {ref,"4b318422cc89ac1f38a3ef615c5ee703e1951bf4"}},
+       {ref,"944b78d4b4dd32168659d5459b728851f373e514"}},
   0},
  {<<"uart">>,
   {git,"https://github.com/tonyrog/uart.git",
