@@ -17,6 +17,7 @@
 -define(menuID_FILE_QUIT,          ?wxID_EXIT).
 -define(menuID_FILE_CLEAR_LOG,     100).
 -define(menuID_FILE_LOAD1,         110).
+-define(menuID_FILE_LOAD2,         111).
 -define(menuID_RUN_NORMAL,         400).
 -define(menuID_RUN_CHECK,          401).
 -define(menuID_RUN_RADIO_1,        402).
@@ -77,11 +78,11 @@ try
 
     % init menu
     FileMenu = create_file_menu(),
-    RunMenu  = create_run_menu(),
+    % RunMenu  = create_run_menu(),
     HelpMenu = create_help_menu(),
     MenuBar    = wxMenuBar:new(),
     wxMenuBar:append(MenuBar, FileMenu, "&File"),
-    wxMenuBar:append(MenuBar, RunMenu,  "&Run"),
+    % wxMenuBar:append(MenuBar, RunMenu,  "&Run"),
     wxMenuBar:append(MenuBar, HelpMenu, "&Help"),
     wxFrame:setMenuBar(Frame, MenuBar),
 
@@ -110,8 +111,8 @@ try
     FilesSz = wxStaticBoxSizer:new(?wxVERTICAL, FilesPanel, [{label, "Select files"}]),
     wxPanel:setSizer(FilesPanel, FilesSz),
     
-    ScriptFilePicker = wxFilePickerCtrl:new(FilesPanel, 21, [{path, "/"}]),
-    AudioFilePicker  = wxFilePickerCtrl:new(FilesPanel, 22, [{path, "/"}]),
+    ScriptFilePicker = wxFilePickerCtrl:new(FilesPanel, 21, [{path, "/"},{message, "select script file"}]),
+    AudioFilePicker  = wxFilePickerCtrl:new(FilesPanel, 22, [{path, "/"},{message, "select audio file"}]),
 
     wxFilePickerCtrl:connect(ScriptFilePicker, command_filepicker_changed, []),
     wxFilePickerCtrl:connect(AudioFilePicker, command_filepicker_changed, []),
@@ -196,6 +197,11 @@ create_file_menu() ->
 
     wxMenu:append(FileMenu, wxMenuItem:new([
             {id,        ?menuID_FILE_LOAD1},
+            {text,      "&Load script file"},
+            {help,  "todo"}
+            ])),
+    wxMenu:append(FileMenu, wxMenuItem:new([
+            {id,        ?menuID_FILE_LOAD2},
             {text,      "&Load audio file"},
             {help,  "todo"}
             ])),
@@ -214,21 +220,21 @@ create_file_menu() ->
 
 %%
 %%
-create_run_menu() ->
-    RunMenu   = wxMenu:new(),
-    wxMenu:append(RunMenu, wxMenuItem:new([
-            {id,    ?menuID_RUN_NORMAL},
-            {text,  "&Normal submenu item"},
-            {help,  "Disabled submenu item"}
-            ])),
-    wxMenu:appendSeparator(RunMenu), %% --------------------------
-    %% note different way of adding check menu item
-    wxMenu:appendCheckItem(RunMenu, ?menuID_RUN_CHECK,    "&Check item"),
-    wxMenu:appendSeparator(RunMenu), %% --------------------------
-    wxMenu:appendRadioItem(RunMenu, ?menuID_RUN_RADIO_1,  "Radio item &1"),
-    wxMenu:appendRadioItem(RunMenu, ?menuID_RUN_RADIO_2,  "Radio item &2"),
-    wxMenu:appendRadioItem(RunMenu, ?menuID_RUN_RADIO_3,  "Radio item &3"),
-    RunMenu.
+% create_run_menu() ->
+%     RunMenu   = wxMenu:new(),
+%     wxMenu:append(RunMenu, wxMenuItem:new([
+%             {id,    ?menuID_RUN_NORMAL},
+%             {text,  "&Normal submenu item"},
+%             {help,  "Disabled submenu item"}
+%             ])),
+%     wxMenu:appendSeparator(RunMenu), %% --------------------------
+%     %% note different way of adding check menu item
+%     wxMenu:appendCheckItem(RunMenu, ?menuID_RUN_CHECK,    "&Check item"),
+%     wxMenu:appendSeparator(RunMenu), %% --------------------------
+%     wxMenu:appendRadioItem(RunMenu, ?menuID_RUN_RADIO_1,  "Radio item &1"),
+%     wxMenu:appendRadioItem(RunMenu, ?menuID_RUN_RADIO_2,  "Radio item &2"),
+%     wxMenu:appendRadioItem(RunMenu, ?menuID_RUN_RADIO_3,  "Radio item &3"),
+%     RunMenu.
 
 %%
 %%
