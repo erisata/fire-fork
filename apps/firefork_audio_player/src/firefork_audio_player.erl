@@ -76,7 +76,7 @@
 -spec play(Path :: string()) -> ok.
 
 play(Path) ->
-    {ok, Module} = firefork_audio_player_app:get_env(player),
+    Module = firefork_audio_player_app:get_env(player, firefork_audio_player_mplayer),
     Module:play(Module, Path).
 
 
@@ -86,7 +86,7 @@ play(Path) ->
 -spec stop() -> ok.
 
 stop() ->
-    {ok, Module} = firefork_audio_player_app:get_env(player),
+    Module = firefork_audio_player_app:get_env(player, firefork_audio_player_mplayer),
     Module:stop(Module).
 
 
@@ -96,7 +96,7 @@ stop() ->
 -spec pause() -> ok.
 
 pause() ->
-    {ok, Module} = firefork_audio_player_app:get_env(player),
+    Module = firefork_audio_player_app:get_env(player, firefork_audio_player_mplayer),
     Module:pause(Module).
 
 
@@ -106,7 +106,7 @@ pause() ->
 -spec resume() -> ok.
 
 resume() ->
-    {ok, Module} = firefork_audio_player_app:get_env(player),
+    Module = firefork_audio_player_app:get_env(player, firefork_audio_player_mplayer),
     Module:resume(Module).
 
 
@@ -116,7 +116,7 @@ resume() ->
 -spec next() -> ok.
 
 next() ->
-    {ok, Module} = firefork_audio_player_app:get_env(player),
+    Module = firefork_audio_player_app:get_env(player, firefork_audio_player_mplayer),
     Module:next(Module).
 
 
@@ -126,5 +126,5 @@ next() ->
 -spec prev() -> ok.
 
 prev() ->
-    {ok, Module} = firefork_audio_player_app:get_env(player),
+    Module = firefork_audio_player_app:get_env(player, firefork_audio_player_mplayer),
     Module:prev(Module).
