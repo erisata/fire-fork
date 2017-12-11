@@ -55,7 +55,7 @@ send(Name, Message) ->
 %%
 %%
 -record(state, {
-    uart     :: term(),
+    uart     :: term() | undefined,
     cb_mod   :: module(),
     codec    :: term()
 }).
@@ -70,16 +70,10 @@ send(Name, Message) ->
 %%  Initialization.
 %%
 init({CbModule, Opts}) ->
-    {ok, Uart} = uart:open( % TODO: Add a retry, and async init.
-        maps:get(uart_device, Opts, "/dev/ttyS0"),
-        maps:get(uart_opts, Opts, [
-            {baud, 9600}, {csize, 8}, {parity, none}, {stopb, 1}, % 9600, 8N1
-            {active, true}, {delay_send, false}
-        ])
-    ),
+    self() ! {initialize, Opts},
     {ok, Codec} = firefork_radio_kiss:init(),
     State = #state{
-        uart   = Uart,
+        uart   = undefined,
         cb_mod = CbModule,
         codec  = Codec
     },
@@ -97,6 +91,10 @@ handle_call(Unknown, _From, State) ->
 %%
 %%  Asynchronous calls.
 %%
+handle_cast({send, Frame}, State = #state{uart = undefined}) ->
+    lager:warning("Not connected to radio, dropping outgoing frame: ~p", [Frame]),
+    {noreply, State};
+
 handle_cast({send, Frame}, State = #state{uart = Uart, codec = Codec}) ->
     {ok, EncodedFrames, NewCodec} = firefork_radio_kiss:encode(Frame, Codec),
     ok = lists:foreach(fun (EncodedFrame) ->
@@ -115,6 +113,24 @@ handle_cast(Unknown, State) ->
 %%
 %%  Other messages.
 %%
+handle_info({initialize, Opts}, State) ->
+    UartDevice = maps:get(uart_device, Opts, "/dev/ttyS0"),
+    UartOpts = maps:get(uart_opts, Opts, [
+        {baud, 9600}, {csize, 8}, {parity, none}, {stopb, 1}, % 9600, 8N1
+        {active, true}, {delay_send, false}
+    ]),
+    case uart:open(UartDevice, UartOpts) of
+        {ok, Uart} ->
+            NewState = State#state{
+                uart = Uart
+            },
+            {noreply, NewState};
+        {error, Reason} ->
+            lager:warning("Cannot connect to radio, reason=~p, device=~p, opts=~p", [Reason, UartDevice, UartOpts]),
+            erlang:send_after(1000, self(), {initialize, Opts}),
+            {noreply, State}
+    end;
+
 handle_info({uart, Uart, IncomingMsg}, State = #state{uart = Uart, codec = Codec, cb_mod = CbModule}) ->
     {ok, DecodedFrames, NewCodec} = firefork_radio_kiss:decode(IncomingMsg, Codec),
     ok = lists:foreach(fun (DecodedFrame) -> handle_frame(DecodedFrame, CbModule) end, DecodedFrames),
