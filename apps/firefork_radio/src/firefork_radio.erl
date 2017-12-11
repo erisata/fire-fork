@@ -1,6 +1,9 @@
 %%% @doc
 %%% Main interface for the `firefork_radio' appplication.
 %%%
+%%% TODO: For tests: `socat -d -d pty,raw,echo=0 pty,raw,echo=0', see more at
+%%%       https://stackoverflow.com/questions/52187/virtual-serial-port-for-linux
+%%%
 -module(firefork_radio).
 -behaviour(gen_server).
 -compile([{parse_transform, lager_transform}]).
@@ -67,7 +70,7 @@ send(Name, Message) ->
 %%  Initialization.
 %%
 init({CbModule, Opts}) ->
-    {ok, Uart} = uart:open(
+    {ok, Uart} = uart:open( % TODO: Add a retry, and async init.
         maps:get(uart_device, Opts, "/dev/ttyS0"),
         maps:get(uart_opts, Opts, [
             {baud, 9600}, {csize, 8}, {parity, none}, {stopb, 1}, % 9600, 8N1
