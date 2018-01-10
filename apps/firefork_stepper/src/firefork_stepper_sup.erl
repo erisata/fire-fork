@@ -37,6 +37,10 @@ init([]) ->
             type  => supervisor
         },
         #{
+            id    => firefork_stepper_scenario,
+            start => {firefork_stepper_scenario, start_link, []}
+        },
+        #{
             id    => firefork_stepper_intf_sup,
             start => {firefork_stepper_intf_sup, start_link, []},
             type  => supervisor
