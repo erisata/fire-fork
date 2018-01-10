@@ -68,12 +68,13 @@ fire(_Channel, Relay) ->
 %%  Initialization.
 %%
 init({Channel, Opts}) ->
-    GpioPins = maps:get(gpio_pins, Opts, [2, 3]),
+    GpioPins = maps:get(gpio_pins, Opts, [2, 3]),               % TODO: Make it configurable.
     ok = do_init_gpio(GpioPins),
     State = #state{
         channel  = Channel,
         pins     = GpioPins,
-        duration = maps:get(duration, Opts, 1000)
+        duration = maps:get(duration, Opts, 1000),
+        relays   = #{}
     },
     {ok, State}.
 
@@ -99,6 +100,7 @@ handle_cast({fire, Relay}, State = #state{relays = Relays, duration = Duration})
     FRef = erlang:make_ref(),
     TRef = erlang:send_after(Duration, self(), {clear, Relay, FRef}),
     NewRelays = Relays#{Relay => #relay{
+        id   = Relay,
         fref = FRef,
         tref = TRef
     }},
