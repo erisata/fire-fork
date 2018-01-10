@@ -3,7 +3,7 @@
 %%%
 -module(firefork_stepper_relay).
 -export([fire/2]).
-
+-compile([{parse_transform, lager_transform}]).
 
 %%% ============================================================================
 %%% Callback definitions.
