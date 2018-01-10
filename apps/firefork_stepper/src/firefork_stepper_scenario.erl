@@ -168,8 +168,7 @@ load_scenario(FileName, FileContent) ->
     Steps = lists:filtermap(ParseLine, Lines),
     StepsWithIds = lists:map(
         fun ({Id, Step}) -> Step#step{id = Id} end,
-        lists:seq(1, length(Steps)),
-        Steps
+        lists:zip(lists:seq(1, length(Steps)), Steps)
     ),
     Scenario = #scenario{
         name  = FileName,
