@@ -68,7 +68,7 @@ fire(_Channel, Relay) ->
 %%  Initialization.
 %%
 init({Channel, Opts}) ->
-    GpioPins = maps:get(gpio_pins, Opts, [2, 3]),               % TODO: Make it configurable.
+    GpioPins = maps:get(gpio_pins, Opts, [1, 2, 3, 4, 5, 6, 7, 8]), % TODO: Make it configurable.
     ok = do_init_gpio(GpioPins),
     State = #state{
         channel  = Channel,
