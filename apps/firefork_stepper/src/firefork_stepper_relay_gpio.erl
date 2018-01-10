@@ -94,6 +94,7 @@ handle_cast({fire, Relay}, State = #state{relays = Relays, duration = Duration})
         #{Relay := #relay{tref = OldTRef}} -> _ = erlang:cancel_timer(OldTRef);
         #{}                                -> ok
     end,
+    lager:debug("Relay ~p set", [Relay]),
     ok = gpio:set(Relay),
     FRef = erlang:make_ref(),
     TRef = erlang:send_after(Duration, self(), {clear, Relay, FRef}),
@@ -117,6 +118,7 @@ handle_cast(Unknown, State) ->
 handle_info({clear, Relay, FRef}, State = #state{relays = Relays}) ->
     NewRelays = case Relays of
         #{Relay := #relay{fref = FRef}} ->
+            lager:debug("Relay ~p clr", [Relay]),
             ok = gpio:clr(Relay),
             maps:remove(Relay, Relays);
         #{Relay := #relay{fref = OtherFRef}} when OtherFRef =/= FRef ->
@@ -124,6 +126,7 @@ handle_info({clear, Relay, FRef}, State = #state{relays = Relays}) ->
             Relays;
         #{} ->
             % Clear it anyway, its safier.
+            lager:debug("Relay ~p clr", [Relay]),
             ok = gpio:clr(Relay),
             maps:remove(Relay, Relays)
     end,

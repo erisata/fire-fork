@@ -231,6 +231,7 @@ do_stop(State = #state{pending = Pending}) ->
 %%
 %%
 do_fire(FRef, Step, State = #state{pending = Pending}) ->
+    lager:info("Firing ~p", [Step]),
     #step{
         channel = Channel,
         relay   = Relay
