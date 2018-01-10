@@ -160,7 +160,7 @@ load_scenario(FileName, FileContent) ->
         (Line) ->
             [Time, Channel, Cue | _] = re:split(Line, "[\t,;]"),
             {true, #step{
-                time    = erlang:binary_to_integer(Time * 1000),    % TODO: Handle sub-seconds.
+                time    = erlang:binary_to_integer(Time) * 1000,    % TODO: Handle sub-seconds.
                 channel = erlang:binary_to_integer(Channel),
                 relay   = erlang:binary_to_integer(Cue) % NOTE: Relay = Cue
             }}
