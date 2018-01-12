@@ -98,7 +98,7 @@ handle_cast({send, Frame}, State = #state{uart = undefined}) ->
 handle_cast({send, Frame}, State = #state{uart = Uart, codec = Codec}) ->
     {ok, EncodedFrames, NewCodec} = firefork_radio_kiss:encode(Frame, Codec),
     ok = lists:foreach(fun (EncodedFrame) ->
-        ok = send:uart(Uart, EncodedFrame)
+        ok = uart:send(Uart, EncodedFrame)
     end, EncodedFrames),
     NewState = State#state{
         codec = NewCodec
