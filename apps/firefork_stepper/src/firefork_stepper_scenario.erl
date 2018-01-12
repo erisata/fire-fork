@@ -208,7 +208,7 @@ do_start(FromMS, State = #state{scenario = #scenario{steps = Steps}}) ->
     NewPending = maps:from_list(lists:filtermap(fun
         (Step = #step{time = Time}) when Time >= FromMS ->
             FRef = erlang:make_ref(),
-            TRef = erlang:send_after(Time, self(), {fire, FRef, RunRef, Step}),
+            TRef = erlang:send_after(Time - FromMS, self(), {fire, FRef, RunRef, Step}),
             {true, {FRef, Step#step{
                 tref = TRef
             }}};
