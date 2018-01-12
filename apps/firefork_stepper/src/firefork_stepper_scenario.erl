@@ -43,6 +43,7 @@ stop() ->
     time    :: integer(),   % Offset from the start in MS.
     channel :: integer(),   % Number of the relay channel.
     relay   :: integer(),   % Number of a relay in the channel.
+    comment :: string(),    % Comment from the scenario file.
     tref    :: reference()  % Timer referece.
 }).
 
@@ -154,16 +155,35 @@ load_scenario_file(FileName) ->
 
 load_scenario(FileName, FileContent) ->
     Lines = re:split(FileContent, "\r?\n"),
+    {ok, LineRE} = re:compile("^(?<A>\\d*)?[.,]?(?<B>\\d*)?[ \\t,;]+(?<C>.+?)[ \\t,;]+(?<D>.+?)($|[ \\t,;]+(?<E>.*)$)"),
     ParseLine = fun
         (<<>>) ->
             false;
+        (<<"#", _Other>>) ->
+            false;
         (Line) ->
-            [Time, Channel, Cue | _] = re:split(Line, "[\t,;]"),
-            {true, #step{
-                time    = erlang:binary_to_integer(Time) * 1000,    % TODO: Handle sub-seconds.
-                channel = erlang:binary_to_integer(Channel),
-                relay   = erlang:binary_to_integer(Cue) % NOTE: Relay = Cue
-            }}
+            case re:run(Line, LineRE, [{capture, all_names, list}]) of
+                {match, [TimeSecStr, TimeSubStr, Channel, Cue, Comment]} ->
+                    TimeS = case TimeSecStr of
+                        "" -> 0;
+                        _  -> erlang:list_to_integer(TimeSecStr)
+                    end,
+                    TimeMS = case TimeSubStr of
+                        []               -> 0;
+                        [_]              -> erlang:list_to_integer(TimeSubStr) * 100;
+                        [_, _]           -> erlang:list_to_integer(TimeSubStr) * 10;
+                        [S1, S2, S3 | _] -> erlang:list_to_integer([S1, S2, S3])
+                    end,
+                    {true, #step{
+                        time    = TimeS * 1000 + TimeMS,
+                        channel = erlang:list_to_integer(Channel),
+                        relay   = erlang:list_to_integer(Cue),% NOTE: Relay = Cue
+                        comment = Comment
+                    }};
+                nomatch ->
+                    lager:warning("Dropping scenario line: ~p", [Line]),
+                    false
+            end
     end,
     Steps = lists:filtermap(ParseLine, Lines),
     StepsWithIds = lists:map(
@@ -243,3 +263,33 @@ do_fire(FRef, Step, State = #state{pending = Pending}) ->
     {ok, NewState}.
 
 
+
+%%% ============================================================================
+%%% Test cases for internal functions.
+%%% ============================================================================
+
+-ifdef(TEST).
+-include_lib("eunit/include/eunit.hrl").
+
+
+load_scenario_test_() ->
+    FileContent = <<
+        "#Time\tChannel\tCue\tComment\n"
+        "0.1\t0\t2\tThe first step!\n"
+        "0.20  2  3\n"
+        "10.3012,0,5\n"
+    >>,
+    ?_assertMatch(
+        {ok, #scenario{
+            name = "FileName",
+            steps = [
+                #step{id = 1, time =   100, channel = 0, relay = 2, comment = "The first step!"},
+                #step{id = 2, time =   200, channel = 2, relay = 3, comment = ""},
+                #step{id = 3, time = 10301, channel = 0, relay = 5, comment = ""}
+            ]
+        }},
+        load_scenario("FileName", FileContent)
+    ).
+
+
+-endif.
